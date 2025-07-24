@@ -57,10 +57,8 @@
                         <i class="fa-solid fa-ellipsis-vertical fs-5"></i>
 
                         <ul class="dropdown-menu">
-                            <li><span class="dropdown-item" tabindex="0"
-            data-bs-toggle="modal" data-bs-target="#editPost" role="button">sample</span></li>
-                            <li><a class="dropdown-item" href="#">Another action</a></li>
-                            <li><a class="dropdown-item" href="#">Something else here</a></li>
+                            <li><span class="dropdown-item" onclick="editPost(1)" >Edit</span></li>
+                            <li><span class="dropdown-item" onclick="deletePost(1)" >Delete</span></li>
                         </ul>
                     </div>
                 </div>
@@ -82,4 +80,16 @@
             </div>
         </div>
     </div>
+@endsection
+
+@section('scripts')
+<script>
+    function editPost(post_id){
+        $('#editPost').modal('show')
+    }
+
+    function deletePost(post_id){
+        deleteMessage("Yes, delete this post");
+    }
+</script>
 @endsection
