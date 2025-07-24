@@ -1,0 +1,51 @@
+body {
+    background: #f0f2f5;
+}
+
+.auth-container {
+    max-width: 400px;
+    margin: 60px auto;
+}
+
+.auth-card {
+    border-radius: 1rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    padding: 2rem;
+}
+
+.form-toggle {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.form-toggle button {
+    border: none;
+    background: none;
+    color: #0d6efd;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+#post-btn-input {
+    transition: 0.2s ease;
+}
+
+#post-btn-input:hover {
+    background-color: #f1f1f1;
+    cursor: pointer;
+    color: #000;
+}
+
+.icon-hover{
+    transition: .3s ease;
+}
+
+.icon-hover:hover {
+    background-color: #f0f0f0;
+    cursor: pointer;
+}
+
+.dropdown-toggle::after {
+  display: none !important;
+}
