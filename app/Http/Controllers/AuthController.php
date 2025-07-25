@@ -8,7 +8,6 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 
-
 class AuthController extends Controller
 {
     function index()
@@ -68,7 +67,7 @@ class AuthController extends Controller
     function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'email' => "required|email|",
+            'email' => "required|email",
             'password' => "required|string"
         ]);
 
@@ -91,5 +90,10 @@ class AuthController extends Controller
             'message' => "dito",
             'redirect' => route('dashboard')
         ]);
+    }
+
+    function logout(Request $request){
+        Auth::logout();
+        return redirect()->route('login');
     }
 }

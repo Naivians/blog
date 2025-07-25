@@ -1,6 +1,4 @@
-body {
-    background: #f0f2f5;
-}
+
 
 .auth-container {
     max-width: 400px;
@@ -49,3 +47,4 @@ body {
 .dropdown-toggle::after {
   display: none !important;
 }
+
