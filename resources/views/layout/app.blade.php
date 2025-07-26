@@ -19,35 +19,30 @@
 </head>
 
 <body class="bg-light">
-    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom fixed-top shadow-sm">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="#">MyApp</a>
 
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+    @if (Auth::check())
+        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom fixed-top shadow-sm">
+            <div class="container">
+                <a class="navbar-brand fw-bold" href="#">MyblogApp</a>
 
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="#">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Features</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Pricing</a>
-                    </li>
-                    <li class="nav-item">
-                        <form method="POST" action="{{ route('auth.logout') }}">
-                            @csrf
-                            <input type="submit" value="Logout" class="btn btn-outline-primary ms-3">
-                        </form>
-                    </li>
-                </ul>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <form method="POST" action="{{ route('auth.logout') }}">
+                                @csrf
+                                <input type="submit" value="Logout" class="btn btn-outline-primary ms-3">
+                            </form>
+                        </li>
+                    </ul>
+                </div>
             </div>
-        </div>
-    </nav>
+        </nav>
+    @endif
+
 
     <main>
         @yield('main-content')
@@ -61,8 +56,40 @@
 
     <script src="{{ asset('assets/js/sweetalert.js') }}"></script>
     <script src="{{ asset('assets/js/auth.js') }}"></script>
+    <script src="{{ asset('assets/js/dashboard.js') }}"></script>
 
-    @yield('scripts')
+    <script>
+        $.ajaxSetup({
+            headers: {
+                "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+            },
+        });
+
+        function showSuccessToast(message) {
+            const toastId = `toast-${Date.now()}`;
+
+            const toastHTML = `
+        <div id="${toastId}" class="toast align-items-center text-white bg-success border-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    `;
+
+            const container = document.getElementById("toast-container");
+            container.insertAdjacentHTML("beforeend", toastHTML);
+
+            const toastElement = document.getElementById(toastId);
+            const toast = new bootstrap.Toast(toastElement);
+            toast.show();
+
+            // Remove the toast from DOM after it disappears
+            toastElement.addEventListener("hidden.bs.toast", () => {
+                toastElement.remove();
+            });
+        }
+    </script>
 </body>
 
 </html>

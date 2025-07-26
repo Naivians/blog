@@ -16,7 +16,7 @@ function success_message(msg = "") {
     });
 }
 
-function deleteMessage(msg="") {
+function deleteMessage(msg = "", callbacks) {
     Swal.fire({
         title: "Are you sure?",
         text: msg,
@@ -27,11 +27,7 @@ function deleteMessage(msg="") {
         confirmButtonText: "Yes, delete it!",
     }).then((result) => {
         if (result.isConfirmed) {
-            Swal.fire({
-                title: "Deleted!",
-                text: "Your file has been deleted.",
-                icon: "success",
-            });
+            callbacks();
         }
     });
 }

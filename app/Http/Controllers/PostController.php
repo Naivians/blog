@@ -21,17 +21,17 @@ class PostController extends Controller
 
     function post()
     {
-        $posts = Post::with(['user', 'comments'])->orderBy('created_at', 'desc')->get();
+        $posts = Post::with(['user', 'comments.user'])->orderBy('created_at', 'desc')->get();
 
         $htmlPost = '';
         foreach ($posts as $post) {
             $randomImg = 'https://randomuser.me/api/portraits/men/' . rand(1, 99) . '.jpg';
             $htmlPost .= '
-            <div class="card mb-3 shadow-sm w-50 mx-auto mt-3">
+            <div class="card mb-3 shadow-sm  mt-3">
                     <div class="card-body">
                         <div class="d-flex align-items-center mb-2 justify-content-between">
                             <div class="d-flex align-items-center">
-                                <img src="' . $randomImg . '"
+                                <img src="' . $post->user->img . '"
                                     class="rounded-circle me-2" alt="User" style="width: 50px; height: 50px;" />
                                 <div>
                                     <h6 class="mb-0 fw-bold">' . $post->user->name . '</h6>
@@ -75,10 +75,10 @@ class PostController extends Controller
                     <div class="rounded mt-2 mt-3 border-bottom bg-light p-3 ">
                         <div class="d-flex align-items-center mb-2 justify-content-between">
                             <div class="d-flex align-items-center">
-                                <img src="' . $randomImg . '" class="rounded-circle me-2"
+                                <img src="' . $comments->user->img . '" class="rounded-circle me-2"
                                     alt="User" style="width: 40px; height: 40px;" />
                                 <div>
-                                    <h6 class="mb-0 fw-bold small">John Doe</h6>
+                                    <h6 class="mb-0 fw-bold small">' . $comments->user->name . '</h6>
                                 </div>
                             </div>
                             <div class="rounded-circle text-center p-4 d-flex align-items-center justify-content-center icon-hover dropdown-toggle"
@@ -86,22 +86,29 @@ class PostController extends Controller
                                 <i class="fa-solid fa-ellipsis-vertical fs-5"></i>
 
                                 <ul class="dropdown-menu">
-                                    <li><span class="dropdown-item" onclick="editPost(1)">Edit</span></li>
-                                    <li><span class="dropdown-item" onclick="deletePost(1)">Delete</span></li>
+                                    <li><span class="dropdown-item" onclick="editComment(' . $comments->id . ')">Edit</span></li>
+                                    <li><span class="dropdown-item" onclick="deletePost(null,' . $comments->id . ')">Delete</span></li>
                                 </ul>
                             </div>
                         </div>
                         ' . $comments->comment . '
                         <br>
-                        <small role="button" class="badge bg-secondary text-light mt-3" id="reply_comment">Reply</small>
-                    </div>
+
+                        <div id="nested_commentContainer-' . $comments->id . '" class="my-3 d-none">
+                                <textarea name="comment" id="nested_comment-' . $comments->id . '" cols="30" rows="3" placeholder="Write a comment..."
+                                    class="form-control mb-2"></textarea>
+                                <button type="button" class="btn btn-outline-primary" onclick="updateComment(' . $comments->id . ')">
+                                    Send
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
                 ';
             }
 
             $htmlPost .= '</div>
                 </div>';
         }
-
         return response()->json([
             'success' => true,
             'data' => $htmlPost
@@ -126,8 +133,8 @@ class PostController extends Controller
             'post' => $request->post
         ]);
 
-        if(!$post){
-             return response()->json([
+        if (!$post) {
+            return response()->json([
                 'success' => false,
                 'message' => "Failed to create post"
             ]);
@@ -137,6 +144,70 @@ class PostController extends Controller
             'success' => true,
         ]);
     }
+
+    function destroyPost($post_id)
+    {
+        $post = $this->postModel->find($post_id);
+
+        if (!$post) {
+            return response()->json([
+                'success' => false,
+                'message' => "Post id do not exist"
+            ]);
+        }
+
+        if (!$post->delete()) {
+            return response()->json([
+                'success' => false,
+                'message' => "Failed to delete post."
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Successfully deleted post"
+        ]);
+    }
+
+    function showPost($post_id)
+    {
+        $post = $this->postModel->find($post_id);
+
+        if (!$post) {
+            return response()->json([
+                'success' => false,
+                'message' => "Post id do not exist"
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $post
+        ]);
+    }
+
+    function updatePost(Request $request)
+    {
+        $post = $this->postModel->find($request->post_id);
+
+        if (!$post) {
+            return response()->json([
+                'success' => false,
+                'message' => "Post id do not exist"
+            ]);
+        }
+
+        $post = $post->update([
+            'post' => $request->editPost
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Successfully update post"
+        ]);
+    }
+
+    // comments
     function storeComment(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -153,11 +224,12 @@ class PostController extends Controller
         $comment = $this->commentModel->create([
             'post_id' => $request->post_id,
             'comment' => $request->comment,
-            'attachment' => 'null'
+            'attachment' => 'null',
+            'user_id' => Auth::id()
         ]);
 
-         if(!$comment){
-             return response()->json([
+        if (!$comment) {
+            return response()->json([
                 'success' => false,
                 'message' => "Failed to create post"
             ]);
@@ -165,6 +237,68 @@ class PostController extends Controller
 
         return response()->json([
             'success' => true,
+        ]);
+    }
+
+    function destroyComment($comment_id)
+    {
+        $comment = $this->commentModel->find($comment_id);
+
+        if (!$comment) {
+            return response()->json([
+                'success' => false,
+                'message' => "Comment id do not exist"
+            ]);
+        }
+
+        if (!$comment->delete()) {
+            return response()->json([
+                'success' => false,
+                'message' => "Failed to delete comment."
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Successfully deleted comment"
+        ]);
+    }
+
+    function showComment($comment_id)
+    {
+        $comment = $this->commentModel->find($comment_id);
+
+        if (!$comment) {
+            return response()->json([
+                'success' => false,
+                'message' => "Comment id do not exist"
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $comment
+        ]);
+    }
+
+    function updateComment(Request $request)
+    {
+        $comment = $this->commentModel->find($request->comment_id);
+
+        if (!$comment) {
+            return response()->json([
+                'success' => false,
+                'message' => "Post id do not exist"
+            ]);
+        }
+
+        $comment = $comment->update([
+            'comment' => $request->commentText
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Successfully update comment"
         ]);
     }
 }

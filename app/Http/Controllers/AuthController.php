@@ -36,19 +36,18 @@ class AuthController extends Controller
             'password' => "required|string|min:6|confirmed"
         ]);
 
-
-
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
                 'message' => $validator->errors()->first()
             ]);
         }
-
+        $randomImg = 'https://randomuser.me/api/portraits/men/' . rand(1, 99) . '.jpg';
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'img' => $randomImg
         ]);
 
         if (!$user) {

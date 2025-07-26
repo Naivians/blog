@@ -11,9 +11,14 @@ class Comment extends Model
 
      protected $fillable = [
         'post_id',
+        'user_id',
         'comment',
         'attachment'
     ];
+
+    public function user(){
+        return $this->belongsTo(user::class);
+    }
 
     public function posts(){
         return $this->belongsTo(post::class)->orderBy('created_at', 'desc');
